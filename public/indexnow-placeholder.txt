@@ -1,0 +1,1 @@
+IndexNow key will be committed by bootstrap agent
