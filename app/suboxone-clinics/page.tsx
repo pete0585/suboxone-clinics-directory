@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { MapPin, Phone, Filter } from 'lucide-react'
+import { MapPin, Filter } from 'lucide-react'
 import { browseListings } from '@/lib/data'
-import { formatPhone, stateAbbrevToName } from '@/lib/utils'
+import { stateAbbrevToName } from '@/lib/utils'
 import type { SuboxoneListing, BrowseFilters } from '@/lib/types'
+import { PhoneButton } from '@/components/PhoneButton'
 
 interface PageProps {
   searchParams: Promise<{
@@ -234,14 +235,7 @@ function ListingRow({ listing }: { listing: SuboxoneListing }) {
 
         {listing.phone && (
           <div className="hidden md:flex flex-col items-end gap-2 flex-shrink-0">
-            <a
-              href={`tel:${listing.phone}`}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-teal text-white text-sm font-semibold rounded-lg hover:bg-brand-teal-dark transition-colors"
-            >
-              <Phone className="w-4 h-4" aria-label="Call" />
-              {formatPhone(listing.phone)}
-            </a>
+            <PhoneButton phone={listing.phone} />
           </div>
         )}
       </div>
