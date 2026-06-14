@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.suboxoneclinicfinder.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://suboxoneclinicfinder.com'),
   title: {
     default: 'Suboxone Clinic Finder — Find MAT Treatment Near You',
     template: '%s | SuboxoneClinicFinder',
