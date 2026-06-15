@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import { MapPin, Phone, ExternalLink, Shield, CheckCircle } from 'lucide-react'
 import { getListingBySlug, getAllSlugs } from '@/lib/data'
 import { formatPhone, stateAbbrevToName } from '@/lib/utils'
+import { createServiceClient } from '@/lib/supabase/server'
+import { ViewTracker } from '@/components/ViewTracker'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -44,6 +46,14 @@ export default async function ClinicDetailPage({ params }: PageProps) {
 
   if (!listing) notFound()
 
+  const isClaimed = listing.claimed === true
+
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+  const supabase = await createServiceClient()
+  const { count: viewCount } = await supabase.from('listing_views').select('*', { count: 'exact', head: true })
+    .eq('directory_slug', 'suboxone-clinics').eq('listing_id', String(listing.id)).gte('viewed_at', monthStart)
+  const monthlyViews = viewCount ?? 0
+
   const stateName = stateAbbrevToName(listing.state)
   const stateSlug = stateName.toLowerCase().replace(/\s+/g, '-')
   const citySlug = listing.city.toLowerCase().replace(/\s+/g, '-')
@@ -76,6 +86,7 @@ export default async function ClinicDetailPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <ViewTracker listingId={String(listing.id)} directorySlug="suboxone-clinics" />
 
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-6">
@@ -135,8 +146,18 @@ export default async function ClinicDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* About */}
-          {listing.bio && (
+          {/* Monthly views stats (claimed only) */}
+          {isClaimed && (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Profile Activity</p>
+              <p className="mt-1 text-3xl font-bold text-blue-900">{monthlyViews}</p>
+              <p className="text-sm text-blue-700">people viewed your profile this month</p>
+              <p className="mt-2 text-xs text-blue-600">0 could contact you. <a href={`/claim/${listing.id}?upgrade=true`} className="underline font-medium">Upgrade to be reachable →</a></p>
+            </div>
+          )}
+
+          {/* About — gated for unclaimed */}
+          {isClaimed && listing.bio && (
             <div className="card p-6">
               <h2 className="font-bold text-brand-navy text-lg mb-3">About This Clinic</h2>
               <p className="text-gray-700 leading-relaxed">{listing.bio}</p>
@@ -177,7 +198,7 @@ export default async function ClinicDetailPage({ params }: PageProps) {
           </div>
 
           {/* Not claimed notice */}
-          {!listing.claimed && (
+          {!isClaimed && (
             <div className="bg-brand-navy-light border border-brand-navy/20 rounded-xl p-5">
               <p className="text-sm font-semibold text-brand-navy mb-1">Are you the owner of this clinic?</p>
               <p className="text-sm text-gray-600 mb-3">
@@ -192,34 +213,43 @@ export default async function ClinicDetailPage({ params }: PageProps) {
 
         {/* Sidebar */}
         <div className="space-y-4">
-          {/* Contact card */}
+          {/* Contact card — gated for unclaimed */}
           <div className="card p-5">
             <h2 className="font-bold text-brand-navy mb-4">Contact</h2>
-            <div className="space-y-3">
-              {listing.phone && (
-                <a
-                  href={`tel:${listing.phone}`}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-brand-teal text-white font-semibold rounded-xl hover:bg-brand-teal-dark transition-colors"
-                >
-                  <Phone className="w-5 h-5" aria-label="Call" />
-                  {formatPhone(listing.phone)}
+            {isClaimed ? (
+              <div className="space-y-3">
+                {listing.phone && (
+                  <a
+                    href={`tel:${listing.phone}`}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-brand-teal text-white font-semibold rounded-xl hover:bg-brand-teal-dark transition-colors"
+                  >
+                    <Phone className="w-5 h-5" aria-label="Call" />
+                    {formatPhone(listing.phone)}
+                  </a>
+                )}
+                {listing.website_url && (
+                  <a
+                    href={listing.website_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:border-brand-teal transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4" aria-label="Website" />
+                    Visit Website
+                  </a>
+                )}
+                <p className="text-xs text-gray-400 mt-4 text-center">
+                  Call to confirm availability before visiting
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
+                <p className="text-sm text-gray-500">Phone, website, and bio are only visible after this provider claims their listing.</p>
+                <a href={`/claim/${listing.id}`} className="mt-2 inline-block text-sm font-medium text-blue-600 hover:underline">
+                  Is this you? Claim your free profile →
                 </a>
-              )}
-              {listing.website_url && (
-                <a
-                  href={listing.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:border-brand-teal transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" aria-label="Website" />
-                  Visit Website
-                </a>
-              )}
-            </div>
-            <p className="text-xs text-gray-400 mt-4 text-center">
-              Call to confirm availability before visiting
-            </p>
+              </div>
+            )}
           </div>
 
           {/* Location */}
@@ -254,27 +284,20 @@ export default async function ClinicDetailPage({ params }: PageProps) {
             </a>
           </div>
 
-          {/* Upgrade prompt for verified listings */}
-          {listing.claimed && listing.listing_tier === 'free' && (
+          {/* Upgrade prompt for claimed free listings */}
+          {isClaimed && listing.listing_tier === 'free' && (
             <div className="card p-5 border-brand-teal">
               <h3 className="font-bold text-brand-navy text-sm mb-2">Upgrade to Verified</h3>
               <p className="text-xs text-gray-600 mb-3">
                 Get more visibility and let patients know you&apos;re accepting their insurance.
               </p>
-              <button
-                onClick={() => {
-                  fetch('/api/upgrade', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ listing_id: listing.id, tier: 'verified' }),
-                  })
-                    .then((r) => r.json())
-                    .then((d) => { if (d.url) window.location.href = d.url })
-                }}
-                className="w-full btn-amber text-sm py-2"
-              >
-                Upgrade — $249/yr
-              </button>
+              <form action="/api/upgrade" method="post">
+                <input type="hidden" name="listing_id" value={listing.id} />
+                <input type="hidden" name="tier" value="verified" />
+                <button type="submit" className="w-full btn-amber text-sm py-2">
+                  Upgrade — $249/yr
+                </button>
+              </form>
             </div>
           )}
         </div>
