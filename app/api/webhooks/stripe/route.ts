@@ -19,6 +19,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Webhook error: ${message}` }, { status: 400 })
   }
 
+  const HANDLED_EVENTS = new Set(['checkout.session.completed', 'customer.subscription.deleted', 'invoice.payment_failed'])
+  if (!HANDLED_EVENTS.has(event.type)) { return NextResponse.json({ received: true }) }
+
   const supabase = await createServiceClient()
 
   if (event.type === 'checkout.session.completed') {
