@@ -94,6 +94,12 @@ async function TokenVerification({ id, token }: { id: string; token: string }) {
 async function UpgradePage({ id }: { id: string }) {
   const listing = await getListingById(id).catch(() => null)
 
+  const supabase = await createServiceClient()
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+  const { count: viewCount } = await supabase.from('listing_views').select('*', { count: 'exact', head: true })
+    .eq('directory_slug', 'suboxone-clinics').eq('listing_id', id).gte('viewed_at', monthStart)
+  const monthlyViews = viewCount ?? 0
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
       <h1 className="text-2xl font-bold text-brand-navy mb-2">Upgrade Your Listing</h1>
@@ -101,18 +107,31 @@ async function UpgradePage({ id }: { id: string }) {
         Your listing is claimed. Upgrade to get more visibility and connect with more patients.
       </p>
 
+      <div className="text-center mb-6">
+        <div className="text-5xl font-bold text-gray-900">{monthlyViews}</div>
+        <div className="text-gray-500 mt-1">people viewed your profile this month</div>
+        <div className="mt-3 text-red-600 font-semibold">0 could contact you — your phone and website are hidden</div>
+      </div>
+
+      <div className="space-y-3 mb-8 text-left">
+        {([
+          ['Your phone number visible to searchers', 'They can call you directly'],
+          ['Your website linked', 'Drive traffic to your practice site'],
+          ['Your full bio displayed', 'Build trust before they reach out'],
+          ['Verified badge', 'Stand out from unclaimed profiles'],
+        ] as [string, string][]).map(([title, sub]) => (
+          <div key={title} className="flex items-start gap-3">
+            <span className="text-green-500 text-lg">✓</span>
+            <div><div className="font-medium">{title}</div><div className="text-sm text-gray-500">{sub}</div></div>
+          </div>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
         {/* Verified tier */}
         <div className="card p-6 border-2 border-brand-teal">
           <div className="badge-teal mb-4 w-fit">Verified</div>
           <div className="text-3xl font-extrabold text-brand-navy mb-1">$249<span className="text-lg font-normal text-gray-500">/yr</span></div>
-          <ul className="space-y-2 text-sm text-gray-600 mb-6">
-            <li>✅ Priority placement above free listings</li>
-            <li>✅ Add full insurance details</li>
-            <li>✅ Telehealth & new patient status</li>
-            <li>✅ Business description</li>
-            <li>✅ Verified badge</li>
-          </ul>
           <UpgradeButton listingId={id} tier="verified" label="Upgrade to Verified" />
         </div>
 
@@ -120,13 +139,6 @@ async function UpgradePage({ id }: { id: string }) {
         <div className="card p-6 border-2 border-brand-amber">
           <div className="badge-featured mb-4 w-fit">Featured ⭐</div>
           <div className="text-3xl font-extrabold text-brand-navy mb-1">$499<span className="text-lg font-normal text-gray-500">/yr</span></div>
-          <ul className="space-y-2 text-sm text-gray-600 mb-6">
-            <li>✅ Everything in Verified</li>
-            <li>⭐ Top-of-results placement</li>
-            <li>⭐ Featured badge & highlight</li>
-            <li>⭐ Newsletter inclusion</li>
-            <li>⭐ Priority patient inquiry queue</li>
-          </ul>
           <UpgradeButton listingId={id} tier="featured" label="Upgrade to Featured" amber />
         </div>
       </div>
