@@ -26,7 +26,7 @@ const FAQ = [
   },
   {
     q: 'Does staying on Suboxone long-term mean I am not in recovery?',
-    a: 'No. Opioid use disorder is a brain disease that changes how the brain processes reward, stress, and self-control. Buprenorphine restores normal function in those brain circuits and dramatically reduces overdose risk, cravings, and illicit opioid use. Taking medication for a brain disorder is not "not being in recovery" — any more than taking a beta-blocker for heart disease means you haven't recovered from a cardiac event. The stigma around MAT is not evidence-based. People on Suboxone can be fully employed, in strong relationships, and living meaningful lives.',
+    a: 'No. Opioid use disorder is a brain disease that changes how the brain processes reward, stress, and self-control. Buprenorphine restores normal function in those brain circuits and dramatically reduces overdose risk, cravings, and illicit opioid use. Taking medication for a brain disorder is not "not being in recovery" — any more than taking a beta-blocker for heart disease means you haven\'t recovered from a cardiac event. The stigma around MAT is not evidence-based. People on Suboxone can be fully employed, in strong relationships, and living meaningful lives.',
   },
   {
     q: 'How does Suboxone treatment differ from methadone for duration?',
