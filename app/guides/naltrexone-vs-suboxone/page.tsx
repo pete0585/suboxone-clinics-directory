@@ -22,7 +22,7 @@ const FAQ = [
   },
   {
     q: 'Who is a good candidate for Suboxone?',
-    a: 'Suboxone is appropriate for most people beginning opioid use disorder treatment. It's particularly useful when: the person is still using opioids regularly (Suboxone can be started during withdrawal without requiring a detox period first), physical withdrawal is severe, or the person has had difficulty with naltrexone adherence in the past. Suboxone is taken daily as a sublingual film or tablet. It has a ceiling effect that prevents euphoria at therapeutic doses.',
+    a: "Suboxone is appropriate for most people beginning opioid use disorder treatment. It's particularly useful when: the person is still using opioids regularly (Suboxone can be started during withdrawal without requiring a detox period first), physical withdrawal is severe, or the person has had difficulty with naltrexone adherence in the past. Suboxone is taken daily as a sublingual film or tablet. It has a ceiling effect that prevents euphoria at therapeutic doses.",
   },
   {
     q: 'Who is a good candidate for naltrexone (Vivitrol)?',
@@ -30,7 +30,7 @@ const FAQ = [
   },
   {
     q: 'Which medication has better outcomes?',
-    a: 'Head-to-head research shows both are effective — but adherence patterns differ significantly. In the landmark X:BOT trial (New England Journal of Medicine, 2018), buprenorphine and extended-release naltrexone had similar outcomes among participants who successfully started treatment. The critical finding: 28% of the naltrexone group failed to complete detox and never started the medication (vs. 6% in the buprenorphine group). Because naltrexone requires full detox first, it has a real-world barrier that buprenorphine doesn't. For most people starting treatment from active use, buprenorphine is the lower-barrier, higher-adherence option.',
+    a: "Head-to-head research shows both are effective — but adherence patterns differ significantly. In the landmark X:BOT trial (New England Journal of Medicine, 2018), buprenorphine and extended-release naltrexone had similar outcomes among participants who successfully started treatment. The critical finding: 28% of the naltrexone group failed to complete detox and never started the medication (vs. 6% in the buprenorphine group). Because naltrexone requires full detox first, it has a real-world barrier that buprenorphine doesn't. For most people starting treatment from active use, buprenorphine is the lower-barrier, higher-adherence option.",
   },
   {
     q: 'Can you switch from Suboxone to naltrexone?',
