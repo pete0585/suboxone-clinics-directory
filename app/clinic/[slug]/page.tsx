@@ -71,8 +71,8 @@ export default async function ClinicDetailPage({ params }: PageProps) {
       postalCode: listing.zip ?? undefined,
       addressCountry: 'US',
     },
-    ...(listing.phone ? { telephone: listing.phone } : {}),
-    ...(listing.website_url ? { url: listing.website_url } : {}),
+    ...(isClaimed && listing.phone ? { telephone: listing.phone } : {}),
+    ...(isClaimed && listing.website_url ? { url: listing.website_url } : {}),
     medicalSpecialty: 'Addiction Medicine',
     availableService: (listing.services_offered ?? []).map((s) => ({
       '@type': 'MedicalProcedure',
