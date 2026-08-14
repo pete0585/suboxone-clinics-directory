@@ -38,7 +38,7 @@ const FAQ = [
   },
 ]
 
-COMPARISON_ROWS = [
+const COMPARISON_ROWS = [
   { aspect: 'Drug class', sub: 'Partial opioid agonist', nal: 'Opioid antagonist' },
   { aspect: 'How it works', sub: 'Activates opioid receptors (partially)', nal: 'Blocks opioid receptors' },
   { aspect: 'Starting requirement', sub: 'Begin during mild-moderate withdrawal', nal: 'Must be opioid-free 7–10 days' },
