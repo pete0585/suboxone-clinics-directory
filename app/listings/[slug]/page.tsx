@@ -60,7 +60,7 @@ export default async function ListingPage({ params }: PageProps) {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <Link href="/listings" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-teal transition-colors mb-6">
+      <Link href="/suboxone-clinics" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-teal transition-colors mb-6">
         <ArrowLeft className="w-4 h-4" />
         Back to directory
       </Link>
