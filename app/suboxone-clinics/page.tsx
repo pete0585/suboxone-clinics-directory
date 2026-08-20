@@ -197,7 +197,7 @@ function FilterCheckbox({ label, active, href }: { label: string; active: boolea
 
 function ListingRow({ listing }: { listing: SuboxoneListing }) {
   return (
-    <Link href={`/clinic/${listing.slug}`} className="card p-5 block hover:border-brand-teal group">
+    <Link href={`/listings/${listing.slug}`} className="card p-5 block hover:border-brand-teal group">
       <div className="flex items-start gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 flex-wrap">
