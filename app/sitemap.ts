@@ -24,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }))
 
   const clinicPages: MetadataRoute.Sitemap = slugs.slice(0, 5000).map((slug) => ({
-    url: `${siteUrl}/clinic/${slug}`,
+    url: `${siteUrl}/listings/${slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.7,
