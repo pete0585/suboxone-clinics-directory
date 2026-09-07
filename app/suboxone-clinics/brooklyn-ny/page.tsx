@@ -1,10 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { BASE } from "@/lib/city-pages"
 import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
   title: "Best Suboxone Clinic in Brooklyn, NY | Suboxone Clinic Directory",
   description: "Find suboxone clinic in Brooklyn, New York. 18+ listed. Filter by city and compare providers.",
+  alternates: { canonical: `${BASE}/suboxone-clinics/brooklyn-ny` },
 }
 
 async function getListings() {
