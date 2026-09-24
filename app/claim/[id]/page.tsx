@@ -1,224 +1,46 @@
-import type { Metadata } from 'next'
+'use client'
+
+import { Suspense, useState } from 'react'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createServiceClient } from '@/lib/supabase/server'
-import { getListingById } from '@/lib/data'
 
-interface PageProps {
-  params: Promise<{ id: string }>
-  searchParams: Promise<{ verified?: string; token?: string }>
-}
-
-export const metadata: Metadata = {
-  title: 'Claim Your Listing | SuboxoneClinicFinder',
-  description: 'Claim and verify your suboxone clinic listing to manage your profile and upgrade to a verified listing.',
-  robots: { index: false, follow: false },
-}
-
-export default async function ClaimPage({ params, searchParams }: PageProps) {
-  const { id } = await params
-  const { verified, token } = await searchParams
-
-  // Handle token verification
-  if (token) {
-    return <TokenVerification id={id} token={token} />
+function ClaimForm() {
+  const { id } = useParams<{ id: string }>()
+  const token = useSearchParams().get('token')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [verified, setVerified] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  async function submit(path: string, body: object, success: string) {
+    setBusy(true); setError(''); setMessage('')
+    try {
+      const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      const data = await response.json()
+      if (!response.ok || !data.success) throw new Error(data.error || 'The request was not completed.')
+      if (path.endsWith('/verify')) {
+        setVerified(true)
+        window.history.replaceState(null, '', `/claim/${id}`)
+      }
+      setMessage(success)
+    } catch (e) { setError(e instanceof Error ? e.message : 'The request failed. Please retry.') }
+    finally { setBusy(false) }
   }
-
-  // Show upgrade page for verified listings
-  if (verified === 'true') {
-    return <UpgradePage id={id} />
-  }
-
-  // Default: claim form
-  return <ClaimForm id={id} />
+  return <main className="mx-auto max-w-lg px-6 py-16">
+    <h1 className="text-3xl font-bold mb-4">{verified ? 'Manage your listing' : 'Claim your listing'}</h1>
+    <p className="mb-6">Verify the contact email already recorded for your listing. If that email is missing or outdated, contact directory support for an ownership review.</p>
+    {error && <p role="alert" className="rounded border border-red-300 bg-red-50 text-red-900 p-4 mb-4">{error}</p>}
+    {message && <p role="status" className="rounded border border-green-300 bg-green-50 text-green-900 p-4 mb-4">{message}</p>}
+    {verified ? <form className="space-y-4" onSubmit={e => { e.preventDefault(); void submit('/api/claim/phone', { listingId: id, phone }, 'Phone number saved and verified.') }}>
+      <label className="block">Public phone number<input className="block w-full border rounded p-3 mt-2" type="tel" required maxLength={40} value={phone} onChange={e => setPhone(e.target.value)} /></label>
+      <button disabled={busy} className="rounded bg-slate-900 text-white px-5 py-3 disabled:opacity-50">{busy ? 'Saving…' : 'Save phone number'}</button>
+    </form> : token ? <button disabled={busy} className="rounded bg-slate-900 text-white px-5 py-3 disabled:opacity-50" onClick={() => void submit('/api/claim/verify', { listingId: id, token }, 'Ownership verified. You can now update your phone number.')}>{busy ? 'Verifying…' : 'Confirm ownership'}</button> : <form className="space-y-4" onSubmit={e => { e.preventDefault(); void submit('/api/claim', { listingId: id, email }, 'Verification email accepted. Check your inbox for the confirmation link.') }}>
+      <label className="block">Listing contact email<input className="block w-full border rounded p-3 mt-2" type="email" required value={email} onChange={e => setEmail(e.target.value)} /></label>
+      <button disabled={busy} className="rounded bg-slate-900 text-white px-5 py-3 disabled:opacity-50">{busy ? 'Requesting…' : 'Send verification email'}</button>
+    </form>}
+    <Link className="block mt-8 underline" href="/">Return to directory</Link>
+  </main>
 }
 
-async function TokenVerification({ id, token }: { id: string; token: string }) {
-  const supabase = await createServiceClient()
-
-  const { data: claim } = await supabase
-    .from('suboxone_claims')
-    .select('*')
-    .eq('listing_id', id)
-    .eq('token', token)
-    .eq('verified', false)
-    .gt('expires_at', new Date().toISOString())
-    .single()
-
-  if (!claim) {
-    return (
-      <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="text-5xl mb-4">❌</div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">Link Expired or Invalid</h1>
-        <p className="text-gray-600 mb-6">
-          This verification link has expired or has already been used.
-          Request a new verification email to claim your listing.
-        </p>
-        <Link href={`/claim/${id}`} className="btn-primary">
-          Request New Link
-        </Link>
-      </div>
-    )
-  }
-
-  // Verify the claim
-  await supabase
-    .from('suboxone_claims')
-    .update({ verified: true, verified_at: new Date().toISOString() })
-    .eq('id', claim.id)
-
-  await supabase
-    .from('suboxone_listings')
-    .update({ claimed: true, claimed_at: new Date().toISOString() })
-    .eq('id', id)
-
-  return (
-    <div className="max-w-lg mx-auto px-4 py-16 text-center">
-      <div className="text-5xl mb-4">✅</div>
-      <h1 className="text-2xl font-bold text-brand-navy mb-3">Listing Claimed!</h1>
-      <p className="text-gray-600 mb-8">
-        Your listing is now verified. Upgrade to a Verified plan to add insurance details,
-        telehealth status, and get priority placement in search results.
-      </p>
-      <div className="space-y-3">
-        <Link href={`/claim/${id}?verified=true`} className="w-full btn-primary block text-center">
-          View Upgrade Options
-        </Link>
-        <Link href={`/clinic/${id}`} className="w-full btn-secondary block text-center">
-          View My Listing
-        </Link>
-      </div>
-    </div>
-  )
-}
-
-async function UpgradePage({ id }: { id: string }) {
-  const listing = await getListingById(id).catch(() => null)
-
-  const supabase = await createServiceClient()
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-  const { count: viewCount } = await supabase.from('listing_views').select('*', { count: 'exact', head: true })
-    .eq('directory_slug', 'suboxone-clinics').eq('listing_id', id).gte('viewed_at', monthStart)
-  const monthlyViews = viewCount ?? 0
-
-  return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-      <h1 className="text-2xl font-bold text-brand-navy mb-2">Upgrade Your Listing</h1>
-      <p className="text-gray-600 mb-8">
-        Your listing is claimed. Upgrade to get more visibility and connect with more patients.
-      </p>
-
-      <div className="text-center mb-6">
-        <div className="text-5xl font-bold text-gray-900">{monthlyViews}</div>
-        <div className="text-gray-500 mt-1">people viewed your profile this month</div>
-        <div className="mt-3 text-red-600 font-semibold">0 could contact you — your phone and website are hidden</div>
-      </div>
-
-      <div className="space-y-3 mb-8 text-left">
-        {([
-          ['Your phone number visible to searchers', 'They can call you directly'],
-          ['Your website linked', 'Drive traffic to your practice site'],
-          ['Your full bio displayed', 'Build trust before they reach out'],
-          ['Verified badge', 'Stand out from unclaimed profiles'],
-        ] as [string, string][]).map(([title, sub]) => (
-          <div key={title} className="flex items-start gap-3">
-            <span className="text-green-500 text-lg">✓</span>
-            <div><div className="font-medium">{title}</div><div className="text-sm text-gray-500">{sub}</div></div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-        {/* Verified tier */}
-        <div className="card p-6 border-2 border-brand-teal">
-          <div className="badge-teal mb-4 w-fit">Verified</div>
-          <div className="text-3xl font-extrabold text-brand-navy mb-1">$249<span className="text-lg font-normal text-gray-500">/yr</span></div>
-          <UpgradeButton listingId={id} tier="verified" label="Upgrade to Verified" />
-        </div>
-
-        {/* Featured tier */}
-        <div className="card p-6 border-2 border-brand-amber">
-          <div className="badge-featured mb-4 w-fit">Featured ⭐</div>
-          <div className="text-3xl font-extrabold text-brand-navy mb-1">$499<span className="text-lg font-normal text-gray-500">/yr</span></div>
-          <UpgradeButton listingId={id} tier="featured" label="Upgrade to Featured" amber />
-        </div>
-      </div>
-
-        {/* Studio Zero upsell */}
-        <div className="rounded-xl bg-blue-50 border border-blue-200 p-5 mb-6">
-          <h2 className="text-base font-semibold text-blue-900 mb-1">
-            Want to attract more patients?
-          </h2>
-          <p className="text-sm text-blue-700 mb-3">
-            Studio Zero helps healthcare providers grow their practice with AI-powered marketing — content, SEO, and visibility that compounds over time.
-          </p>
-          <a
-            href="https://studiozerohq.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-sm font-medium text-blue-700 underline hover:opacity-80"
-          >
-            Learn more at Studio Zero →
-          </a>
-        </div>
-
-      <p className="text-xs text-gray-400 text-center">
-        Annual subscription. Cancel anytime. One new patient referral from Verified pays for 3 years of listings.
-      </p>
-    </div>
-  )
-}
-
-function UpgradeButton({ listingId, tier, label, amber }: { listingId: string; tier: string; label: string; amber?: boolean }) {
-  return (
-    <form action="/api/upgrade" method="post">
-      <input type="hidden" name="listing_id" value={listingId} />
-      <input type="hidden" name="tier" value={tier} />
-      <button type="submit" className={`w-full ${amber ? 'btn-amber' : 'btn-primary'}`}>
-        {label}
-      </button>
-    </form>
-  )
-}
-
-async function ClaimForm({ id }: { id: string }) {
-  const listing = await getListingById(id).catch(() => null)
-
-  return (
-    <div className="max-w-lg mx-auto px-4 sm:px-6 py-12">
-      <h1 className="text-2xl font-bold text-brand-navy mb-2">Claim Your Listing</h1>
-      {listing && (
-        <p className="text-gray-600 mb-8">
-          Claim <strong>{listing.clinic_name}</strong> to manage your clinic profile, update insurance info, and upgrade to a verified listing.
-        </p>
-      )}
-
-      <div className="card p-6">
-        <form action="/api/claim" method="post" className="space-y-4">
-          <input type="hidden" name="listing_id" value={id} />
-          <div>
-            <label htmlFor="email" className="label">Your Work Email *</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              className="input"
-              placeholder="admin@yourclinic.com"
-            />
-            <p className="text-xs text-gray-500 mt-1">Must match your clinic domain. We&apos;ll send a verification link.</p>
-          </div>
-          <button type="submit" className="w-full btn-primary">
-            Send Verification Email
-          </button>
-        </form>
-      </div>
-
-      <p className="text-xs text-gray-500 text-center mt-4">
-        Having trouble? Email us at{' '}
-        <a href="mailto:hello@suboxoneclinicfinder.com" className="text-brand-teal hover:underline">
-          hello@suboxoneclinicfinder.com
-        </a>
-      </p>
-    </div>
-  )
-}
+export default function ClaimPage() { return <Suspense fallback={<p className="p-8">Loading claim…</p>}><ClaimForm /></Suspense> }
