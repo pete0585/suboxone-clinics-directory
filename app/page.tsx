@@ -38,12 +38,22 @@ export default async function HomePage() {
               Free to search. No login required.
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
-              Find a Suboxone Clinic<br className="hidden md:block" /> Near You
-            </h1>
+            Find trusted Suboxone clinics near you
+          </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl">
-              Search {totalCount > 0 ? totalCount.toLocaleString() : 'thousands of'} suboxone clinics and MAT providers nationwide.
-              Filter by Medicaid, telehealth, and accepting new patients.
-            </p>
+            Browse Suboxone and MAT providers by location, Medicaid acceptance, and telehealth — and connect directly. Free, always.
+          </p>
+          <p className="text-sm text-gray-500 mt-4">
+            Are you a Suboxone clinic?{' '}
+            <a
+              href="https://studiozerohq.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:opacity-80"
+            >
+              List your practice free →
+            </a>
+          </p>
             <SearchHero />
             <div className="flex flex-wrap gap-3 mt-6">
               <QuickFilter href="/suboxone-clinics?medicaid=true" icon="💳" label="Medicaid Accepted" />
