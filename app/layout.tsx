@@ -1,6 +1,7 @@
 import EditorialLink from 'next/link'
 import type { Metadata } from 'next'
 import './globals.css'
+import NewsletterSignup from '@/components/NewsletterSignup'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://suboxoneclinicfinder.com'),
@@ -125,6 +126,11 @@ function Footer() {
               <a href="https://studiozerohq.com" target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors">Studio Zero — AI Marketing Operators for Healthcare</a>
             </p>
           </div>
-        </footer>
+        
+      {/* Newsletter signup compact */}
+      <div className="mt-6 pt-6 border-t border-white/10">
+        <NewsletterSignup compact />
+      </div>
+  </footer>
   )
 }
