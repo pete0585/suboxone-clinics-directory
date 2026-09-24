@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { MapPin, Phone, Shield, CheckCircle, Wifi, Users, ChevronRight } from 'lucide-react'
 import { getFeaturedListings, getTotalCount, getTopCities, getStateCounts } from '@/lib/data'
 import { formatPhone, stateAbbrevToName } from '@/lib/utils'
+import NewsletterSignup from '@/components/NewsletterSignup'
 
 export const metadata: Metadata = {
   title: 'Suboxone Clinic Finder — Find MAT Treatment Near You',
