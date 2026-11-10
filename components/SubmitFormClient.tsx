@@ -1,0 +1,115 @@
+'use client';
+import {useState,type FormEvent} from 'react';
+export default function SubmitFormClient() {
+    const [error,setError]=useState<string|null>(null);
+    const [saved,setSaved]=useState(false);
+    const [busy,setBusy]=useState(false);
+    async function submit(e:FormEvent<HTMLFormElement>){
+      e.preventDefault();setError(null);setBusy(true);
+      const form=new FormData(e.currentTarget);const data:Record<string,unknown>=Object.fromEntries(form);
+      for(const key of ['insurance','services'])data[key]=form.getAll(key);
+      for(const key of ['telehealth','accepting_new_patients','walk_in'])data[key]=form.get(key)==='true';
+      try{const res=await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const body=await res.json();if(!res.ok||body.success!==true||body.status!=='pending_review')throw Error(body.error||'We could not confirm your submission. Your entries have been kept.');setSaved(true)}catch(err){setError(err instanceof Error?err.message:'Submission unavailable. Your entries have been kept.')}finally{setBusy(false)}
+    }
+    if(saved)return <div role="status">Submission saved for review. It is not public yet. No approval time or email delivery is promised.</div>;
+    return (<div className="card p-6">
+      <h2 className="font-bold text-brand-navy text-lg mb-6">Clinic Information</h2>
+      <form onSubmit={submit} className="space-y-5">
+        <div>
+          <label htmlFor="clinic_name" className="label">Clinic Name *</label>
+          <input type="text" id="clinic_name" name="clinic_name" required className="input" placeholder="Recovery Health Clinic"/>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="phone" className="label">Phone Number *</label>
+            <input type="tel" id="phone" name="phone" required className="input" placeholder="(555) 123-4567"/>
+          </div>
+          <div>
+            <label htmlFor="email" className="label">Contact Email *</label>
+            <input type="email" id="email" name="email" required className="input" placeholder="admin@yourclinic.com"/>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="website_url" className="label">Website URL</label>
+          <input type="url" id="website_url" name="website_url" className="input" placeholder="https://yourclinic.com"/>
+        </div>
+
+        <div>
+          <label htmlFor="address" className="label">Street Address *</label>
+          <input type="text" id="address" name="address" required className="input" placeholder="123 Main St"/>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="col-span-2 sm:col-span-1">
+            <label htmlFor="city" className="label">City *</label>
+            <input type="text" id="city" name="city" required className="input" placeholder="Houston"/>
+          </div>
+          <div>
+            <label htmlFor="state" className="label">State *</label>
+            <input type="text" id="state" name="state" required maxLength={2} className="input" placeholder="TX"/>
+          </div>
+          <div>
+            <label htmlFor="zip" className="label">ZIP Code *</label>
+            <input type="text" id="zip" name="zip" required className="input" placeholder="77001"/>
+          </div>
+        </div>
+
+        <div>
+          <label className="label">Insurance & Payment Accepted</label>
+          <div className="grid grid-cols-2 gap-2">
+            {['Medicaid', 'Medicare', 'Self-Pay', 'Sliding Scale', 'Private Insurance', 'CHIP'].map((ins) => (<label key={ins} className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" name="insurance" value={ins.toLowerCase().replace(/\s+/g, '_')} className="rounded border-gray-300 text-brand-teal focus:ring-brand-teal"/>
+                {ins}
+              </label>))}
+          </div>
+        </div>
+
+        <div>
+          <label className="label">Services Offered</label>
+          <div className="grid grid-cols-2 gap-2">
+            {['Buprenorphine/Suboxone', 'Methadone', 'Vivitrol/Naltrexone', 'Counseling', 'Drug Testing', 'Case Management'].map((svc) => (<label key={svc} className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" name="services" value={svc.toLowerCase().replace(/[^a-z]+/g, '_')} className="rounded border-gray-300 text-brand-teal focus:ring-brand-teal"/>
+                {svc}
+              </label>))}
+          </div>
+        </div>
+
+        <div>
+          <label className="label">Additional Options</label>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" name="telehealth" value="true" className="rounded border-gray-300 text-brand-teal focus:ring-brand-teal"/>
+              Telehealth appointments available
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" name="accepting_new_patients" value="true" className="rounded border-gray-300 text-brand-teal focus:ring-brand-teal"/>
+              Currently accepting new patients
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" name="walk_in" value="true" className="rounded border-gray-300 text-brand-teal focus:ring-brand-teal"/>
+              Walk-in appointments available
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="bio" className="label">Clinic Description</label>
+          <textarea id="bio" name="bio" rows={4} className="input resize-none" placeholder="Tell patients about your clinic, approach to MAT, and what makes your practice unique..."/>
+        </div>
+
+        <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-600">
+          <p className="font-medium text-gray-900 mb-1">After submission:</p>
+          <p>Your submission will be saved for review before publication. There is no automatic approval, promised review time or promised email.</p>
+        </div>
+
+        {error && <p role="alert">{error}</p>}
+        <button disabled={busy} type="submit" className="w-full btn-primary py-3">
+          Submit Clinic Listing
+        </button>
+
+        <p className="text-xs text-gray-500 text-center"> Listings are free. Public contact details are available without payment. </p>
+      </form>
+    </div>);
+}
