@@ -263,7 +263,7 @@ function AcceptingCard({ listing }: { listing: SuboxoneListing }) {
           )}
           {listing.website_url && (
             <a
-              href={listing.website_url}
+              data-directory-action="website_click" href={listing.website_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:border-brand-teal transition-colors"

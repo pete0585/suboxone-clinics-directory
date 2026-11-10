@@ -121,7 +121,7 @@ export default async function ListingPage({ params }: PageProps) {
                     <Phone className="w-5 h-5"/>
                     {formatPhone(listing.phone)}
                   </a>)}
-                {listing.website_url && (<a href={listing.website_url} target="_blank" rel="noopener noreferrer" className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:border-brand-teal transition-colors">
+                {listing.website_url && (<a data-directory-action="website_click" href={listing.website_url} target="_blank" rel="noopener noreferrer" className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:border-brand-teal transition-colors">
                     <ExternalLink className="w-4 h-4"/>
                     Visit Website
                   </a>)}
