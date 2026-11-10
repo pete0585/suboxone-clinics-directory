@@ -140,7 +140,7 @@ export default async function PhiladelphiaPage() {
                     </a>
                   )}
                   {clinic.website_url && (
-                    <a href={clinic.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-gray-500 hover:text-brand-teal">
+                    <a data-directory-action="website_click" href={clinic.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-gray-500 hover:text-brand-teal">
                       <ExternalLink className="w-3 h-3" />
                       Website
                     </a>
